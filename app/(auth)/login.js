@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, Typography } from '../../src/constants/Theme';
+import logo from '../../assets/images/logo.png';
 import Input from '../../src/components/Input';
 import Button from '../../src/components/Button';
 import { useAuth } from '../../src/context/AuthContext';
@@ -49,6 +50,7 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Log in to find your perfect match</Text>
         </View>
@@ -105,16 +107,24 @@ const styles = StyleSheet.create({
   header: {
     marginTop: Spacing.xl,
     marginBottom: Spacing.xxl,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: Spacing.m,
   },
   title: {
     ...Typography.h1,
-    fontSize: 32,
+    fontSize: 28,
     color: Colors.primary,
+    textAlign: 'center',
   },
   subtitle: {
     ...Typography.body,
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
+    textAlign: 'center',
   },
   form: {
     flex: 1,

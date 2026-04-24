@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
-import { Colors, Spacing, Typography, Shadows } from '../../src/constants/Theme';
+import { Colors, Spacing, Typography, Shadows } from '../../../src/constants/Theme';
 import { useRouter } from 'expo-router';
-import api from '../../src/services/api';
-import { useAuth } from '../../src/context/AuthContext';
+import api from '../../../src/services/api';
+import { useAuth } from '../../../src/context/AuthContext';
 import Toast from 'react-native-toast-message';
 
 export default function Messages() {

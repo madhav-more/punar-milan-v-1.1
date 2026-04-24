@@ -41,8 +41,21 @@ export const AuthProvider = ({ children }) => {
     setUserState(userData);
   };
 
-  const register = async (name, email, password, phone, dob, gender) => {
-    const response = await api.post('/auth/register', { name, email, password, phone, dob, gender });
+  const register = async (name, email, password, phone, dob, gender, photoData) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('phone', phone);
+    formData.append('dob', dob);
+    formData.append('gender', gender);
+    if (photoData) {
+      formData.append('photo', photoData);
+    }
+    
+    const response = await api.post('/auth/register', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     const { token, ...userData } = response.data;
 
     await AsyncStorage.setItem('userToken', token);

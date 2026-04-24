@@ -2,7 +2,9 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
+import { toastConfig } from '../src/components/ToastConfig';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function RootNavigation() {
   const { user, loading } = useAuth();
@@ -36,10 +38,12 @@ function RootNavigation() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootNavigation />
-      <StatusBar style="dark" />
-      <Toast />
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <RootNavigation />
+        <StatusBar style="dark" />
+        <Toast config={toastConfig} />
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

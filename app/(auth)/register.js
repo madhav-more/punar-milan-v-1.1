@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Colors, Spacing, Typography } from '../../src/constants/Theme';
+import { Colors, Spacing, Typography, Shadows } from '../../src/constants/Theme';
+import logo from '../../assets/images/logo.png';
 import Input from '../../src/components/Input';
 import Button from '../../src/components/Button';
 import { useAuth } from '../../src/context/AuthContext';
 import Toast from 'react-native-toast-message';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Camera } from 'lucide-react-native';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -14,15 +18,69 @@ export default function Register() {
     email: '',
     password: '',
     phone: '',
-    dob: '',
+    dob: new Date(),
     gender: 'male',
   });
+  const [photoData, setPhotoData] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const onChangeDate = (event, selectedDate) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      handleInputChange('dob', selectedDate);
+    }
+  };
+
+  const handlePickImage = () => {
+    Alert.alert('Profile Photo', 'Select an option', [
+      { text: 'Camera', onPress: () => openPicker('camera') },
+      { text: 'Gallery', onPress: () => openPicker('gallery') },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  const openPicker = async (source) => {
+    const options = {
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    };
+
+    let result;
+    if (source === 'camera') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Camera permission denied' });
+        return;
+      }
+      result = await ImagePicker.launchCameraAsync(options);
+    } else {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Gallery permission denied' });
+        return;
+      }
+      result = await ImagePicker.launchImageLibraryAsync(options);
+    }
+
+    if (!result.canceled && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setPhotoData({
+        uri: asset.uri,
+        type: asset.mimeType || 'image/jpeg',
+        name: `photo-${Date.now()}.jpg`,
+      });
+    }
   };
 
   const handleRegister = async () => {
@@ -35,10 +93,21 @@ export default function Register() {
       });
       return;
     }
+    
+    if (!photoData) {
+      Toast.show({
+        type: 'error',
+        text1: 'Profile Photo Required',
+        text2: 'Please tap the avatar to add a photo',
+      });
+      return;
+    }
 
     try {
       setLoading(true);
-      await register(name, email, password, phone, dob, formData.gender);
+      // Format DOB to YYYY-MM-DD
+      const formattedDob = dob.toISOString().split('T')[0];
+      await register(name, email, password, phone, formattedDob, formData.gender, photoData);
       Toast.show({
         type: 'success',
         text1: 'Welcome!',
@@ -58,10 +127,27 @@ export default function Register() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Enter your details to start your journey</Text>
+        </View>
+
+        <View style={styles.avatarSection}>
+          <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper}>
+            {photoData ? (
+              <Image source={{ uri: photoData.uri }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Camera size={32} color={Colors.textSecondary} />
+                <Text style={styles.avatarPlaceholderText}>Add Photo</Text>
+              </View>
+            )}
+            <View style={styles.cameraBtn}>
+              <Camera size={16} color={Colors.white} />
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.form}>
@@ -86,12 +172,28 @@ export default function Register() {
             onChangeText={(v) => handleInputChange('phone', v)}
             keyboardType="phone-pad"
           />
-          <Input
-            label="Date of Birth"
-            placeholder="YYYY-MM-DD"
-            value={formData.dob}
-            onChangeText={(v) => handleInputChange('dob', v)}
-          />
+
+          <View style={styles.dateContainer}>
+             <Text style={styles.dateLabel}>Date of Birth</Text>
+             <TouchableOpacity style={styles.dateSelector} onPress={() => setShowDatePicker(true)}>
+                <Text style={styles.dateText}>
+                  {formData.dob.toISOString().split('T')[0]}
+                </Text>
+             </TouchableOpacity>
+             {showDatePicker && (
+                <DateTimePicker
+                  value={formData.dob}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onChangeDate}
+                  maximumDate={new Date()}
+                />
+             )}
+             {Platform.OS === 'ios' && showDatePicker && (
+               <Button title="Confirm" onPress={() => setShowDatePicker(false)} style={{marginTop: Spacing.s}} />
+             )}
+          </View>
+
           <Input
             label="Password"
             placeholder="••••••••"
@@ -155,23 +257,94 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: Spacing.xl,
-    marginBottom: Spacing.l,
+    marginBottom: Spacing.m,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: Spacing.s,
   },
   title: {
     ...Typography.h1,
-    fontSize: 32,
+    fontSize: 28,
     color: Colors.primary,
+    textAlign: 'center',
   },
   subtitle: {
     ...Typography.body,
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
+    textAlign: 'center',
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.surface,
+    borderWidth: 3,
+    borderColor: Colors.border,
+  },
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderStyle: 'dashed',
+  },
+  avatarPlaceholderText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  cameraBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.white,
+    ...Shadows.light,
   },
   form: {
     flex: 1,
   },
+  dateContainer: {
+    marginBottom: Spacing.m,
+  },
+  dateLabel: {
+    ...Typography.bodySmall,
+    fontWeight: '600',
+    marginBottom: Spacing.s,
+    color: Colors.text,
+  },
+  dateSelector: {
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.m,
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+  },
+  dateText: {
+    fontSize: 15,
+    color: Colors.text,
+  },
   genderContainer: {
     marginBottom: Spacing.l,
+    marginTop: Spacing.s,
   },
   genderLabel: {
     ...Typography.bodySmall,
@@ -185,28 +358,31 @@ const styles = StyleSheet.create({
   },
   genderButton: {
     flex: 1,
-    height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.white,
   },
   genderButtonActive: {
     borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '10', // Light pink background
+    backgroundColor: Colors.primary + '10',
   },
   genderButtonText: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
+    fontWeight: '600',
   },
   genderButtonTextActive: {
     color: Colors.primary,
     fontWeight: '700',
   },
   registerButton: {
-    marginTop: Spacing.m,
+    marginTop: Spacing.s,
+    height: 52,
+    borderRadius: 12,
   },
   loginLink: {
     flexDirection: 'row',

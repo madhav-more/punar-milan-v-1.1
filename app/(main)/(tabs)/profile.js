@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
-import { useAuth } from '../../src/context/AuthContext';
-import { Colors, Spacing, Typography, Shadows } from '../../src/constants/Theme';
+import { useAuth } from '../../../src/context/AuthContext';
+import { Colors, Spacing, Typography, Shadows } from '../../../src/constants/Theme';
 import { Settings, LogOut, ChevronRight, Edit3, User as UserIcon, Heart, Shield } from 'lucide-react-native';
-import Button from '../../src/components/Button';
+import Button from '../../../src/components/Button';
 import { useRouter } from 'expo-router';
 
 export default function Profile() {

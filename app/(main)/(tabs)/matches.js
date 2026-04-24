@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
-import { Colors, Spacing, Typography, Shadows } from '../../src/constants/Theme';
+import { Colors, Spacing, Typography, Shadows } from '../../../src/constants/Theme';
 import { Check, X, Clock } from 'lucide-react-native';
-import api from '../../src/services/api';
+import api from '../../../src/services/api';
 import Toast from 'react-native-toast-message';
 
 export default function Matches() {

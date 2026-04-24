@@ -1,47 +1,30 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
-import { Home, Heart, MessageSquare, User } from 'lucide-react-native';
+import { Drawer } from 'expo-router/drawer';
 import { Colors } from '../../src/constants/Theme';
+import CustomDrawer from '../../src/components/navigation/CustomDrawer';
+import { Menu } from 'lucide-react-native';
+import { TouchableOpacity } from 'react-native';
 
 export default function MainLayout() {
   return (
-    <Tabs screenOptions={{
-      tabBarActiveTintColor: Colors.primary,
-      tabBarInactiveTintColor: Colors.textSecondary,
-      headerShown: true,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-        color: Colors.text,
-      },
-    }}>
-      <Tabs.Screen
-        name="home"
+    <Drawer
+      drawerContent={(props) => <CustomDrawer {...props} />}
+      screenOptions={{
+        headerShown: false, // Hide drawer header by default, child navigators will handle it
+        drawerType: 'slide',
+        drawerStyle: {
+          width: '80%',
+          backgroundColor: Colors.white,
+        },
+        overlayColor: 'rgba(0,0,0,0.5)',
+      }}
+    >
+      <Drawer.Screen
+        name="(tabs)"
         options={{
-          title: 'Discovery',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          title: 'Main App',
         }}
       />
-      <Tabs.Screen
-        name="matches"
-        options={{
-          title: 'Matches',
-          tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="messages"
-        options={{
-          title: 'Messages',
-          tabBarIcon: ({ color }) => <MessageSquare size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
-        }}
-      />
-    </Tabs>
+    </Drawer>
   );
 }

@@ -11,10 +11,9 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../src/context/AuthContext';
-import { Colors, Spacing, Typography, Shadows } from '../../src/constants/Theme';
-import api from '../../src/services/api';
+import { useAuth } from '../../../src/context/AuthContext';
+import { Colors, Spacing, Typography, Shadows } from '../../../src/constants/Theme';
+import api from '../../../src/services/api';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Camera, Save } from 'lucide-react-native';
@@ -55,7 +54,7 @@ export default function EditProfile() {
   const openPicker = async (source) => {
     let result;
     const options = {
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -88,10 +87,13 @@ export default function EditProfile() {
     try {
       setUploadingPhoto(true);
       const formDataObj = new FormData();
+      const uriParts = asset.uri.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+      
       formDataObj.append('photo', {
         uri: asset.uri,
-        type: asset.mimeType || 'image/jpeg',
-        name: `photo-${Date.now()}.jpg`,
+        name: `photo-${Date.now()}.${fileType}`,
+        type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
       });
 
       const response = await api.post('/users/profile/photo', formDataObj, {
@@ -122,8 +124,8 @@ export default function EditProfile() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await api.put('/users/profile', formData);
-      await updateUserData(formData);
+      const response = await api.put('/users/profile', formData);
+      await updateUserData(response.data);
       Toast.show({ type: 'success', text1: '✅ Profile Saved!' });
       router.back();
     } catch (error) {
@@ -164,7 +166,7 @@ export default function EditProfile() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <View style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
@@ -258,7 +260,7 @@ export default function EditProfile() {
           )}
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

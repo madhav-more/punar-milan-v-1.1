@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors, Spacing, Typography, Shadows } from '../constants/Theme';
 
+
 const Button = ({ title, onPress, type = 'primary', loading = false, style, textStyle }) => {
   const isPrimary = type === 'primary';
 

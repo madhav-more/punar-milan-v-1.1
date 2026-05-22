@@ -8,8 +8,8 @@ const LOCAL_IP = 'localhost';
 
 // const BASE_URL = `https://punar-milan-backend-v-1-0-h129.vercel.app/api`;
 // export const SOCKET_URL = `https://punar-milan-backend-v-1-0-h129.vercel.app/`;
-const BASE_URL = `http://10.85.54.48:5001/api`;
-export const SOCKET_URL = `http://10.85.54.48:5001`;
+const BASE_URL = `http://10.139.191.48:5001/api`;
+export const SOCKET_URL = `http://10.139.191.48:5001`;
 
 const api = axios.create({
   baseURL: BASE_URL,
